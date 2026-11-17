@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Kurdish Arena | هۆڵی یارییە ئۆنڵاینەکان</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- AUTH SCREEN -->
+  <div id="authScreen" class="auth-wrap">
+    <div class="card auth-box anim-pop">
+      <div class="logo">
+        <div class="logo-badge">پلاتفۆڕمی ناوچەی کوردان</div>
+        <h1>⚔️ Kurdish Arena</h1>
+        <p>گۆڕەپانی یارییە ئۆنڵاینە کوردییەکان</p>
+      </div>
+
+      <button class="btn btn-google" style="width:100%;" onclick="handleGoogleLogin()">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 8 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+          <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.3 0-9.7-3.4-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+          <path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.6l6.2 5.2C40.9 35.4 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/>
+        </svg>
+        بەردەوامبوون بە گووگڵ (Continue with Google)
+      </button>
+
+      <div class="divider">یان بە ئیمەیڵ</div>
+
+      <div class="tabs-row">
+        <button class="tab-btn active" id="tabLoginBtn" onclick="switchAuthTab('login')">چوونەژوورەوە</button>
+        <button class="tab-btn" id="tabRegBtn" onclick="switchAuthTab('register')">هەژماری نوێ</button>
+      </div>
+
+      <div id="regNameGroup" class="form-group hidden">
+        <label>ناوی یاریزان</label>
+        <input type="text" id="authName" placeholder="نموونە: Malik_Pro" maxlength="16" />
+      </div>
+      <div class="form-group">
+        <label>ئیمەیڵ</label>
+        <input type="email" id="authEmail" placeholder="example@gmail.com" />
+      </div>
+      <div class="form-group">
+        <label>وشەی نهێنی</label>
+        <input type="password" id="authPass" placeholder="لانیکەم ٦ پیت" />
+      </div>
+
+      <button class="btn" style="width:100%;" id="authSubmitBtn" onclick="handleAuth()">چوونەژوورەوە</button>
+      <div class="divider">تاقیکردنەوەی خێرا</div>
+      <button class="btn btn-secondary" style="width:100%;" onclick="startOfflineQuick()">🤖 یاری 3D لەگەڵ AI (بێ هەژمار)</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP LOBBY -->
+  <div id="lobbyScreen" class="container hidden">
+    <!-- Top Header -->
+    <div class="card topbar anim-fade">
+      <div class="user-pill">
+        <div class="avatar-circle" id="topAvatarBox">🥷</div>
+        <div>
+          <div style="font-weight:800; font-size:17px;" id="topName">یاریزان</div>
+          <div style="font-size:12px; color:var(--primary);">
+            ئاستی <span id="topLevel">1</span> • کۆد: <b id="topFriendCode" style="color:var(--gold);">#------</b>
+            <span id="topBoostTag" class="hidden" style="color:var(--gold);">• ⚡ 2x XP</span>
+          </div>
+          <div class="xp-bar-bg" style="width:145px;"><div class="xp-bar-fill" id="topXpBar"></div></div>
+        </div>
+      </div>
+
+      <div class="stats-pills">
+        <div class="pill" style="color:var(--gold);">🪙 <span id="topCoins">0</span></div>
+        <div class="pill" style="color:var(--primary);">🏆 <span id="topWins">0</span></div>
+        <button class="btn btn-danger btn-sm" onclick="logoutUser()">چوونەدەرەوە</button>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="nav-grid">
+      <button class="nav-item active" onclick="switchNav('hub', this)">🎮 یارییەکان</button>
+      <button class="nav-item" onclick="switchNav('friends', this)">💬 هاوڕێ و چات <span id="reqBadge" class="badge hidden">0</span></button>
+      <button class="nav-item" onclick="switchNav('leaderboard', this)">🏆 ڕێزبەندی</button>
+      <button class="nav-item" onclick="switchNav('profile', this)">👤 پڕۆفایل</button>
+      <button class="nav-item" onclick="switchNav('settings', this)">⚙️ سیتتینگ</button>
+    </div>
+
+    <!-- TAB 1: GAME HUB -->
+    <div id="tab-hub" class="anim-fade">
+      <!-- Game Cards Grid -->
+      <div id="hubGamesView">
+        <div class="section-title">🕹️ هۆڵی یارییەکانی Kurdish Arena</div>
+        <div class="games-grid">
+          <div class="card game-card featured-game">
+            <div class="game-badge">🔥 بەردەستە • 3D</div>
+            <div class="game-icon">⚔️</div>
+            <h3>Survival Arena 3D</h3>
+            <p>شەڕی مانەوە بۆ ٣ تا ١٠ یاریزان بە ئۆنڵاین و AI، لەگەڵ بازنەی مەترسی و بەهێزکەرەکان.</p>
+            <button class="btn" style="width:100%;" onclick="openSurvivalSection()">🚀 کردنەوەی یاری</button>
+          </div>
+
+          <div class="card game-card locked-game">
+            <div class="game-badge soon">⏳ بەم زووانە</div>
+            <div class="game-icon">🏎️</div>
+            <h3>Neon Drift Racing</h3>
+            <p>پێشبڕکێی ئۆنڵاینی ئۆتۆمبێل لە شەقامە نیۆنەکاندا (لە داهاتوودا زیاد دەکرێت).</p>
+            <button class="btn btn-outline" style="width:100%;" disabled>بەم زووانە...</button>
+          </div>
+
+          <div class="card game-card locked-game">
+            <div class="game-badge soon">⏳ بەم زووانە</div>
+            <div class="game-icon">🎯</div>
+            <h3>Sniper Clash 1v1</h3>
+            <p>ڕووبەڕووبوونەوەی نیشانەگرەکان بە شێوەی ئۆنڵاین (لە داهاتوودا زیاد دەکرێت).</p>
+            <button class="btn btn-outline" style="width:100%;" disabled>بەم زووانە...</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Survival Arena Lobby View (Inside Hub) -->
+      <div id="survivalLobbyView" class="hidden anim-fade">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <h2>⚔️ لۆبی Survival Arena 3D</h2>
+          <button class="btn btn-outline btn-sm" onclick="backToGameHub()">⬅️ گەڕانەوە بۆ یارییەکان</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="section-title">➕ دروستکردنی ڕووم</div>
+            <div class="form-group">
+              <label>ناوی ڕووم</label>
+              <input type="text" id="newRoomName" placeholder="نموونە: شەڕی پاڵەوانان" maxlength="22" />
+            </div>
+            <div class="grid-2" style="gap:10px;">
+              <div class="form-group">
+                <label>ژمارەی یاریزان (٣ - ١٠)</label>
+                <select id="newRoomMax">
+                  <option value="3">٣ یاریزان</option>
+                  <option value="4">٤ یاریزان</option>
+                  <option value="6" selected>٦ یاریزان</option>
+                  <option value="8">٨ یاریزان</option>
+                  <option value="10">١٠ یاریزان</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>جۆری ڕووم</label>
+                <select id="newRoomPrivacy">
+                  <option value="public">گشتی (Public)</option>
+                  <option value="private">تایبەت (بە کۆد)</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn" style="width:100%;" onclick="createRoom()">دروستکردنی ڕووم</button>
+          </div>
+
+          <div class="card">
+            <div class="section-title">🔑 چوونەناو ڕووم بە کۆد</div>
+            <p style="font-size:13px; color:var(--muted); margin-bottom:12px;">کۆدی ٦ پیتی ڕوومەکە لە هاوڕێکەت وەربگرە:</p>
+            <div class="form-group">
+              <input type="text" id="joinCodeInput" placeholder="A7X9K2" maxlength="6" style="text-transform:uppercase; text-align:center; letter-spacing:4px; font-weight:800; font-size:18px;" />
+            </div>
+            <button class="btn btn-secondary" style="width:100%;" onclick="joinRoomByCode()">چوونەناو ڕووم</button>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:14px;">
+          <div class="card">
+            <div class="section-title">🎮 ڕوومە گشتییە کراوەکان</div>
+            <div id="publicRoomsList"><p style="color:var(--muted); font-size:14px;">هیچ ڕوومێکی کراوە نییە.</p></div>
+          </div>
+
+          <div class="card">
+            <div class="section-title">🤖 ڕاهێنان لەگەڵ AI</div>
+            <div class="form-group">
+              <label>ژمارەی بۆتەکان</label>
+              <select id="aiCount">
+                <option value="2">٢ بۆت (٣ کەس)</option>
+                <option value="5" selected>٥ بۆت (٦ کەس)</option>
+                <option value="9">٩ بۆت (١٠ کەس)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>ئاستی AI</label>
+              <select id="aiDifficulty">
+                <option value="easy">ئاسان</option>
+                <option value="medium" selected>مامناوەند</option>
+                <option value="hard">سەخت</option>
+              </select>
+            </div>
+            <button class="btn btn-gold" style="width:100%;" onclick="startAiTraining()">⚔️ دەستپێکردن لەگەڵ AI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: FRIENDS & CHAT -->
+    <div id="tab-friends" class="hidden anim-fade">
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-title">➕ زیادکردنی هاوڕێ و لیستی هاوڕێکان</div>
+          <p style="font-size:12px; color:var(--muted); margin-bottom:10px;">
+            کۆدی هاوڕێیەتی تۆ: <b id="myShareCode" style="color:var(--primary);">#------</b>
+          </p>
+          <div style="display:flex; gap:8px; margin-bottom:14px;">
+            <input type="text" id="addFriendCodeInput" placeholder="کۆدی هاوڕێ بنووسە (نموونە: KA4821)" maxlength="8" style="text-transform:uppercase;" />
+            <button class="btn btn-sm" onclick="sendFriendRequest()">ناردن</button>
+          </div>
+
+          <div id="friendRequestsBox" style="margin-bottom:14px;"></div>
+          <div style="font-size:13px; font-weight:700; margin-bottom:8px; color:var(--primary);">هاوڕێکانت:</div>
+          <div id="friendsListBox"><p style="color:var(--muted); font-size:13px;">هێشتا هاوڕێت نییە.</p></div>
+        </div>
+
+        <div class="card">
+          <div class="tabs-row" style="margin-bottom:10px;">
+            <button class="tab-btn active" id="chatTabGlobal" onclick="switchChatMode('global')">🌍 چاتی گشتی</button>
+            <button class="tab-btn" id="chatTabPrivate" onclick="switchChatMode('private')">💬 چاتی هاوڕێ</button>
+          </div>
+          <div id="chatHeaderInfo" style="font-size:12px; color:var(--primary); margin-bottom:8px;">چاتی گشتی هۆڵی Kurdish Arena</div>
+          <div id="chatMessagesBox" class="chat-box"></div>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <input type="text" id="chatInput" placeholder="نامەیەک بنووسە..." maxlength="200" onkeydown="if(event.key==='Enter') sendActiveChat()" />
+            <button class="btn btn-sm" onclick="sendActiveChat()">ناردن</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: LEADERBOARD -->
+    <div id="tab-leaderboard" class="hidden anim-fade">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <div class="section-title" style="margin:0;">🏆 ڕێزبەندی باشترین یاریزانان</div>
+          <button class="btn btn-outline btn-sm" onclick="loadLeaderboard()">🔄 نوێکردنەوە</button>
+        </div>
+        <div id="leaderboardList"><p style="color:var(--muted);">بارکردن...</p></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: PROFILE & BOOSTS -->
+    <div id="tab-profile" class="hidden anim-fade">
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-title">👤 پڕۆفایل و وێنەی کەسی</div>
+          <div class="profile-preview">
+            <div class="avatar-lg" id="profAvatarPreview">🥷</div>
+            <div style="flex:1;">
+              <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+                🖼️ هەڵبژاردنی وێنە لە Photos
+                <input type="file" id="photoFileInput" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)" />
+              </label>
+              <button class="btn btn-outline btn-sm" onclick="clearCustomPhoto()" style="margin-top:6px;">لابردنی وێنە</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>ناوی یاریزان</label>
+            <input type="text" id="newNameInput" maxlength="16" />
+          </div>
+          <div class="form-group">
+            <label>بەرواری لەدایکبوون</label>
+            <input type="date" id="profBirthdate" />
+          </div>
+          <div class="form-group">
+            <label>دەربارەی خۆت (Bio)</label>
+            <input type="text" id="profBio" placeholder="نموونە: یاریزانی Kurdish Arena" maxlength="50" />
+          </div>
+          <button class="btn" style="width:100%;" onclick="saveAccountDetails()">💾 پاشەکەوتکردنی زانیارییەکان</button>
+
+          <div class="form-group" style="margin-top:14px;">
+            <label>یان لۆگۆی پڕۆفایل هەڵبژێرە:</label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;" id="avatarPicker"></div>
+          </div>
+
+          <div style="margin-top:12px; padding:12px; background:var(--card2); border-radius:12px; font-size:13px; color:var(--muted); line-height:1.9;">
+            <div>📅 بەرواری بوون بە ئەندام: <b id="profJoinDate" style="color:#fff;">-</b></div>
+            <div>🎯 کۆی کوشتنەکان: <b id="profKills" style="color:#fff;">0</b> • 🎮 یاری: <b id="profMatches" style="color:#fff;">0</b></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">⚡ بۆستی ئەکاونت و بەرزکردنەوە</div>
+          <div class="upgrade-card">
+            <div><div style="font-weight:700;">🔥 بۆستی 2x XP (٣ یاری)</div><div style="font-size:12px; color:var(--muted);">XP دوو هێندە دەبێت</div></div>
+            <button class="btn btn-gold btn-sm" onclick="buyXpBoost()">🪙 100</button>
+          </div>
+          <div class="upgrade-card">
+            <div><div style="font-weight:700;">❤️ زیادکردنی خوێن (+10 HP)</div><div style="font-size:12px; color:var(--muted);">ئاستی <span id="upgHpLvl">0</span>/5</div></div>
+            <button class="btn btn-sm" id="btnUpgHp" onclick="buyUpgrade('hp')">🪙 120</button>
+          </div>
+          <div class="upgrade-card">
+            <div><div style="font-weight:700;">👟 زیادکردنی خێرایی (+5%)</div><div style="font-size:12px; color:var(--muted);">ئاستی <span id="upgSpeedLvl">0</span>/5</div></div>
+            <button class="btn btn-sm" id="btnUpgSpeed" onclick="buyUpgrade('speed')">🪙 120</button>
+          </div>
+          <div class="upgrade-card">
+            <div><div style="font-weight:700;">💥 هێزی گولـلە (+6%)</div><div style="font-size:12px; color:var(--muted);">ئاستی <span id="upgDmgLvl">0</span>/5</div></div>
+            <button class="btn btn-sm" id="btnUpgDmg" onclick="buyUpgrade('dmg')">🪙 150</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SETTINGS -->
+    <div id="tab-settings" class="hidden anim-fade">
+      <div class="card">
+        <div class="section-title">⚙️ ڕێکخستنەکانی وێبسایت (Settings)</div>
+        <div class="upgrade-card">
+          <div><div style="font-weight:700;">🔊 دەنگەکانی کلیک و یاری</div><div style="font-size:12px; color:var(--muted);">کاراکردنی دەنگی دوگمە و تەقەکردن</div></div>
+          <input type="checkbox" id="setSound" style="width:22px; height:22px;" checked onchange="updateSetting('sound', this.checked)" />
+        </div>
+        <div class="upgrade-card">
+          <div><div style="font-weight:700;">✨ کوالێتی بەرزی 3D (Shadows)</div><div style="font-size:12px; color:var(--muted);">بیکوژێنەرەوە ئەگەر مۆبایلەکەت خاو بوو</div></div>
+          <input type="checkbox" id="setShadows" style="width:22px; height:22px;" checked onchange="updateSetting('shadows', this.checked)" />
+        </div>
+        <div class="upgrade-card">
+          <div><div style="font-weight:700;">🎨 ڕەنگی سەرەکی دیزاین</div><div style="font-size:12px; color:var(--muted);">ڕەنگی ڕووناکی وێبسایتەکە بگۆڕە</div></div>
+          <div style="display:flex; gap:8px;">
+            <button class="color-dot" style="background:#00f5d4;" onclick="setThemeColor('#00f5d4')"></button>
+            <button class="color-dot" style="background:#38bdf8;" onclick="setThemeColor('#38bdf8')"></button>
+            <button class="color-dot" style="background:#a855f7;" onclick="setThemeColor('#a855f7')"></button>
+            <button class="color-dot" style="background:#ffd166;" onclick="setThemeColor('#ffd166')"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER WITH COPYRIGHT -->
+    <footer class="site-footer">
+      <div>⚔️ <b>Kurdish Arena</b> — پەرەپێدراوە لەلایەن <b>مالیکەوە</b></div>
+      <div style="font-size:12px; color:var(--muted); margin-top:4px;">© 2026 Kurdish Arena. هەموو مافێک پارێزراوە (All Rights Reserved).</div>
+    </footer>
+  </div>
+
+  <!-- WAITING ROOM -->
+  <div id="waitingRoomScreen" class="container hidden anim-fade">
+    <div class="card" style="text-align:center;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <h2 id="waitRoomTitle">ڕوومی یاری</h2>
+        <button class="btn btn-danger btn-sm" onclick="leaveWaitingRoom()">دەرچوون لە ڕووم</button>
+      </div>
+      <div style="margin:18px 0;">
+        <div style="font-size:13px; color:var(--muted); margin-bottom:8px;">کۆدی ڕووم (بینێرە بۆ هاوڕێکانت):</div>
+        <div class="room-code-box" id="waitRoomCode">------</div>
+        <button class="btn btn-outline btn-sm" style="margin-right:8px;" onclick="copyRoomCode()">📋 کۆپی</button>
+      </div>
+      <div style="font-size:14px; color:var(--primary); font-weight:700;">
+        یاریزانەکان: <span id="waitPlayerCount">0</span> / <span id="waitMaxPlayers">6</span> (لانیکەم ٣ یاریزان)
+      </div>
+      <div class="players-grid" id="waitPlayersList"></div>
+      <div id="hostControls" class="hidden" style="margin-top:14px; display:flex; flex-direction:column; gap:10px; max-width:360px; margin-inline:auto;">
+        <label style="display:flex; align-items:center; justify-content:center; gap:8px; font-size:14px; cursor:pointer;">
+          <input type="checkbox" id="fillAiCheckbox" style="width:auto;" checked />
+          پڕکردنەوەی شوێنە بەتاڵەکان بە بۆتی AI
+        </label>
+        <button class="btn btn-gold" onclick="hostStartMatch()">🚀 دەستپێکردنی یاری 3D</button>
+      </div>
+      <div id="guestWaitMsg" class="hidden" style="color:var(--muted); margin-top:12px;">⏳ چاوەڕوانی سەرۆکی ڕووم بکە...</div>
+    </div>
+  </div>
+
+  <!-- 3D GAME ARENA OVERLAY -->
+  <div id="gameScreen" class="hidden">
+    <div id="threeContainer"></div>
+    <div id="labelsLayer"></div>
+    <canvas id="minimapCanvas" width="96" height="96"></canvas>
+
+    <div class="hud-top">
+      <div class="hud-box">
+        <div style="display:flex; justify-content:space-between; gap:14px; font-weight:700;">
+          <span>❤️ <span id="hudHpText">100</span></span>
+          <span style="color:#38bdf8;">🛡️ <span id="hudShieldText">0</span></span>
+        </div>
+        <div class="hp-wrap"><div class="hp-fill" id="hudHpBar" style="width:100%;"></div></div>
+        <div class="shield-fill" id="hudShieldBar" style="width:0%;"></div>
+        <div id="hudBuffs" style="font-size:11px; color:var(--gold); margin-top:4px;"></div>
+      </div>
+      <div class="hud-box" style="text-align:center;">
+        <div style="font-weight:800; color:var(--primary);">زیندوو: <span id="hudAlive">0</span></div>
+        <div style="font-size:12px; color:var(--gold);">کوشتن: <span id="hudKills">0</span></div>
+        <div id="hudZoneMsg" style="font-size:11px; color:var(--danger); font-weight:700;"></div>
+      </div>
+      <button class="btn btn-danger btn-sm" style="pointer-events:auto;" onclick="exitArena()">🚪 دەرچوون</button>
+    </div>
+
+    <div class="kill-feed" id="killFeed"></div>
+    <div id="spectatorBanner" class="hidden">👻 تۆ دۆڕایت - سەیرکردنی یاریزانانی تر</div>
+
+    <div class="touch-controls">
+      <div class="joy-base" id="moveJoyBase"><div class="joy-knob" id="moveJoyKnob"></div></div>
+      <div id="dashBtn">⚡ DASH</div>
+      <div class="joy-base" id="aimJoyBase"><div class="joy-knob" id="aimJoyKnob"></div></div>
+    </div>
+  </div>
+
+  <!-- MATCH END MODAL -->
+  <div id="matchEndModal" class="modal-overlay hidden">
+    <div class="card anim-pop" style="max-width:380px; width:100%; text-align:center;">
+      <h2 id="endTitle" style="font-size:24px; margin-bottom:8px;">🏆 یاری کۆتایی هات</h2>
+      <p id="endWinnerText" style="color:var(--primary); font-weight:700; margin-bottom:14px;"></p>
+      <div style="background:var(--card2); padding:14px; border-radius:14px; margin-bottom:16px; line-height:2; font-size:14px;">
+        <div>🎯 کوشتنەکانت: <b id="endKills">0</b></div>
+        <div>⭐ XPی بەدەستهاتوو: <b id="endXp" style="color:var(--primary);">+0</b></div>
+        <div>🪙 پارەی بەدەستهاتوو: <b id="endCoins" style="color:var(--gold);">+0</b></div>
+      </div>
+      <button class="btn" style="width:100%;" onclick="closeMatchEnd()">گەڕانەوە بۆ لۆبی</button>
+    </div>
+  </div>
+
+  <script type="module" src="./js/lobby.js"></script>
+</body>
+</html>
